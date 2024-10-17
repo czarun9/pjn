@@ -1,16 +1,17 @@
 import os
 import nltk
 from nltk import word_tokenize
-from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.decomposition import PCA
+
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
-nltk.download('stopwords')
 
 
 def load_stopwords(filepath):
@@ -30,7 +31,7 @@ def read_book_to_corpus(corpus):
             with open(file_path, 'r', encoding='utf-8') as file:
                 text = file.read()
                 corpus.append(text)
-    return corpus;
+    return corpus
 
 
 def preprocess_text(text):
@@ -38,7 +39,7 @@ def preprocess_text(text):
 
     processed_tokens = [
         token.lower() for token in tokens
-        if token.isalnum() and token.lower() not in stopwords
+        if token.isalpha() and token.lower() not in stopwords
     ]
 
     return processed_tokens
@@ -57,10 +58,11 @@ def plot_word_frequencies(word_counts):
         sorted_word_counts = counts.most_common()
 
         words, counts = zip(*sorted_word_counts)
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(10, 8))
         plt.bar(words[:30], counts[:30])
         plt.xticks(rotation=90)
-        plt.title(f'Częstości słów w dokumencie {i + 1} (Counter)')
+        plt.title(f'Częstości słów w dokumencie: {document_labels[i]}')
+        plt.ylabel('Częstość')
         plt.show()
 
 
@@ -78,7 +80,7 @@ def plot_zipf_law(word_counts):
         line_y = (frequencies[s-1] / line_x) ** s
         plt.loglog(line_x, line_y, linestyle='--', color='red', label=f'Linia Zipfa (s={s})')
 
-        plt.title(f'Prawo Zipfa dla dokumentu {i + 1}')
+        plt.title(f'Prawo Zipfa dla dokumentu: {document_labels[i]}')
         plt.xlabel('Ranga')
         plt.ylabel('Częstość')
         plt.grid(True)
@@ -92,22 +94,59 @@ def create_tfidf_matrix(corpus):
     return pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out())
 
 
-folder_path = 'resources/books'
+def reduce_dimensions_pca(tfidf_matrix, n_components=2):
+    pca = PCA(n_components=n_components)
+    return pca.fit_transform(tfidf_matrix)
 
+def plot_2d_scatter(matrix_2d, labels=None):
+    plt.figure(figsize=(10, 6))
+    plt.scatter(matrix_2d[:, 0], matrix_2d[:, 1], c='blue', marker='o')
+
+    if labels is not None:
+        for i, label in enumerate(labels):
+            plt.annotate(label, (matrix_2d[i, 0], matrix_2d[i, 1]))
+
+    plt.title('Redukcja wymiarowości dokumentów do 2D')
+    plt.xlabel('Składowa 1')
+    plt.ylabel('Składowa 2')
+    plt.grid(True)
+    plt.show()
+
+
+folder_path = 'resources/books'
+document_labels = [
+    "Mała syrenka",
+    "Calineczka",
+    "Dziewczynka z zapałkami",
+    "Królowa śniegu",
+    "W pustyni i w puszczy"
+]
 corpus = []
 
 corpus = read_book_to_corpus(corpus)
 processed_corpus = [preprocess_text(document) for document in corpus]
+
 word_counts = calculate_word_counts(processed_corpus)
 
 print("Wykresy częstości (Counter):")
-# plot_word_frequencies(word_counts)
+plot_word_frequencies(word_counts)
 
 print("Prawo Zipfa dla wybranych dokumentów:")
-# plot_zipf_law(word_counts)
+plot_zipf_law(word_counts)
 
 print("Utwórz matrycę TfIdf")
 tfidf_df = create_tfidf_matrix(processed_corpus)
-
 print(tfidf_df)
-print(tfidf_df.head())
+
+print("Obliczanie macierzy podobieństwa kosinusowego")
+cosine_sim_matrix = cosine_similarity(tfidf_df)
+print(cosine_sim_matrix)
+
+print("Redukcja wymiarowości PCA")
+reduced_tfidf_matrix = reduce_dimensions_pca(tfidf_df)
+print(reduced_tfidf_matrix)
+
+
+plot_2d_scatter(reduced_tfidf_matrix, labels=document_labels)
+
+
