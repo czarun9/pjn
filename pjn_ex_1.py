@@ -9,7 +9,6 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import PCA
 
-
 nltk.download('punkt')
 nltk.download('punkt_tab')
 
@@ -77,7 +76,7 @@ def plot_zipf_law(word_counts):
 
         s = 1
         line_x = np.array(ranks)
-        line_y = (frequencies[s-1] / line_x) ** s
+        line_y = (frequencies[s - 1] / line_x) ** s
         plt.loglog(line_x, line_y, linestyle='--', color='red', label=f'Linia Zipfa (s={s})')
 
         plt.title(f'Prawo Zipfa dla dokumentu: {document_labels[i]}')
@@ -97,6 +96,7 @@ def create_tfidf_matrix(corpus):
 def reduce_dimensions_pca(tfidf_matrix, n_components=2):
     pca = PCA(n_components=n_components)
     return pca.fit_transform(tfidf_matrix)
+
 
 def plot_2d_scatter(matrix_2d, labels=None):
     plt.figure(figsize=(10, 6))
@@ -123,30 +123,28 @@ document_labels = [
 ]
 corpus = []
 
-corpus = read_book_to_corpus(corpus)
-processed_corpus = [preprocess_text(document) for document in corpus]
+if __name__ == "__main__":
+    corpus = read_book_to_corpus(corpus)
+    processed_corpus = [preprocess_text(document) for document in corpus]
 
-word_counts = calculate_word_counts(processed_corpus)
+    word_counts = calculate_word_counts(processed_corpus)
 
-print("Wykresy częstości (Counter):")
-plot_word_frequencies(word_counts)
+    print("Wykresy częstości (Counter):")
+    plot_word_frequencies(word_counts)
 
-print("Prawo Zipfa dla wybranych dokumentów:")
-plot_zipf_law(word_counts)
+    print("Prawo Zipfa dla wybranych dokumentów:")
+    plot_zipf_law(word_counts)
 
-print("Utwórz matrycę TfIdf")
-tfidf_df = create_tfidf_matrix(processed_corpus)
-print(tfidf_df)
+    print("Utwórz matrycę TfIdf")
+    tfidf_df = create_tfidf_matrix(processed_corpus)
+    print(tfidf_df)
 
-print("Obliczanie macierzy podobieństwa kosinusowego")
-cosine_sim_matrix = cosine_similarity(tfidf_df)
-print(cosine_sim_matrix)
+    print("Obliczanie macierzy podobieństwa kosinusowego")
+    cosine_sim_matrix = cosine_similarity(tfidf_df)
+    print(cosine_sim_matrix)
 
-print("Redukcja wymiarowości PCA")
-reduced_tfidf_matrix = reduce_dimensions_pca(tfidf_df)
-print(reduced_tfidf_matrix)
+    print("Redukcja wymiarowości PCA")
+    reduced_tfidf_matrix = reduce_dimensions_pca(tfidf_df)
+    print(reduced_tfidf_matrix)
 
-
-plot_2d_scatter(reduced_tfidf_matrix, labels=document_labels)
-
-
+    plot_2d_scatter(reduced_tfidf_matrix, labels=document_labels)
