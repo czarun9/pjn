@@ -2,6 +2,9 @@ import spacy
 import os
 import matplotlib.pyplot as plt
 from collections import Counter
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from wordcloud import WordCloud
 
 nlp = spacy.load("pl_core_news_sm")
 
@@ -84,6 +87,30 @@ def visualize_counts(counts, title, xlabel):
         print("\n")
 
 
+def create_tfidf_matrix(noun_counts):
+    documents = []
+
+    for title, counts in noun_counts.items():
+        doc = ' '.join([f"{lemma} " * count for lemma, count in
+                        counts.items()])
+        documents.append(doc.strip())
+
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    return pd.DataFrame(tfidf_matrix.toarray(), columns=vectorizer.get_feature_names_out(), index=noun_counts.keys())
+
+
+def plot_wordcloud_per_book(noun_counts):
+    for title, counts in noun_counts.items():
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(counts)
+
+        plt.figure(figsize=(10, 5))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis('off')
+        plt.title(f"Chmura Tagów dla Książki: {title}")
+        plt.show()
+
+
 if __name__ == "__main__":
     folder_path = 'resources/books'
     corpus = read_book_to_corpus(folder_path)
@@ -98,3 +125,7 @@ if __name__ == "__main__":
     noun_counts = noun_counts_by_lemma(processed_corpus)
     for book_title, counts in noun_counts.items():
         visualize_counts({book_title: counts}, "Częstość występowania rzeczowników (lematy)", "Rzeczowniki")
+
+    tfidf_matrix = create_tfidf_matrix(noun_counts)
+    print(tfidf_matrix)
+    plot_wordcloud_per_book(noun_counts)
