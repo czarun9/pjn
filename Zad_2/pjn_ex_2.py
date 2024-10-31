@@ -1,8 +1,11 @@
+import random
+
 import spacy
 import os
 import matplotlib.pyplot as plt
 from collections import Counter
 import pandas as pd
+from nltk import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 from morfeusz2 import Morfeusz
@@ -113,8 +116,58 @@ def plot_wordcloud_per_book(noun_counts):
         plt.show()
 
 
+def extract_ambiguous_words(corpus):
+    ambiguous_words = {}
+    for title, text in corpus:
+        words = word_tokenize(text)
+        for word in words:
+            analyses = morfeusz.analyse(word)
+            if len(analyses) > 1:
+                analyses_str = [f"{analysis[2][1]} ({analysis[2][2]})" for analysis in analyses]
+                ambiguous_words[word] = analyses_str
+    return ambiguous_words
+
+
+def display_random_ambiguous_words(ambiguous_words):
+    sampled_words = random.sample(list(ambiguous_words.items()), min(100, len(ambiguous_words)))
+
+    print("Tabela losowych 100 niejednoznacznych słów:\n")
+    for word, analyses in sampled_words:
+        print(f"Słowo: {word}")
+        print("Możliwe analizy:")
+        for analysis in analyses:
+            print(f" - {analysis}")
+        print("\n")
+
+
+def find_subjects_and_verbs(corpus, n_subjects=5):
+    subjects_verbs = {}
+
+    for title, text in corpus:
+        doc = nlp(text)
+        subjects = []
+
+        for sent in doc.sents:
+            for token in sent:
+                if token.dep_ in ("nsubj", "nsubjpass") and token.pos_ == "NOUN":
+                    subject = token.text
+                    verb = token.head.text
+                    subjects.append(subject)
+
+                    subjects_verbs[subject] = verb
+
+                if len(subjects) >= n_subjects:
+                    break
+            if len(subjects) >= n_subjects:
+                break
+
+        break
+
+    return subjects_verbs
+
+
 if __name__ == "__main__":
-    folder_path = 'resources/books'
+    folder_path = '../resources/books'
     corpus = read_book_to_corpus(folder_path)
 
     processed_corpus = process_corpus_with_spacy(corpus)
@@ -128,6 +181,15 @@ if __name__ == "__main__":
     for book_title, counts in noun_counts.items():
         visualize_counts({book_title: counts}, "Częstość występowania rzeczowników (lematy)", "Rzeczowniki")
 
+    ambiguous_words = extract_ambiguous_words(corpus)
+    display_random_ambiguous_words(ambiguous_words)
+    print("/n")
+
     tfidf_matrix = create_tfidf_matrix(noun_counts)
     print(tfidf_matrix)
     plot_wordcloud_per_book(noun_counts)
+    subjects_verbs = find_subjects_and_verbs(corpus)
+
+    print("Rzeczowniki pełniące funkcję podmiotu i związane z nimi czasowniki:")
+    for subject, verb in subjects_verbs.items():
+        print(f"Podmiot: {subject}, Orzeczenie: {verb}")
