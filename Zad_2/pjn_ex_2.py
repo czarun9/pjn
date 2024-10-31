@@ -5,8 +5,10 @@ from collections import Counter
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
+from morfeusz2 import Morfeusz
 
 nlp = spacy.load("pl_core_news_sm")
+morfeusz = Morfeusz()
 
 
 def read_book_to_corpus(folder_path):
