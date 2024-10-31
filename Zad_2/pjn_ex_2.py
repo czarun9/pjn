@@ -38,18 +38,20 @@ def process_corpus_with_spacy(corpus):
     return processed_corpus
 
 
-def analyze_pos_and_tag(processed_corpus):
+def analyze_pos_and_tag(corpus):
     pos_counts = {}
     tag_counts = {}
 
-    for title, tokens_info in processed_corpus:
-        pos_freq = Counter([token[2] for token in tokens_info])
-        tag_freq = Counter([token[3] for token in tokens_info])
+    for title, text in corpus:
+        doc = nlp(text)
+        pos_freq = Counter([token.pos_ for token in doc])
+        tag_freq = Counter([token.tag_ for token in doc])
 
         pos_counts[title] = dict(pos_freq)
         tag_counts[title] = dict(tag_freq)
 
     return pos_counts, tag_counts
+
 
 
 def noun_counts_by_lemma(processed_corpus):
@@ -140,7 +142,7 @@ def display_random_ambiguous_words(ambiguous_words):
         print("\n")
 
 
-def find_subjects_and_verbs(corpus, n_subjects=5):
+def find_subjects_and_verbs(corpus, n_subjects=10):
     subjects_verbs = {}
 
     for title, text in corpus:
@@ -172,7 +174,7 @@ if __name__ == "__main__":
 
     processed_corpus = process_corpus_with_spacy(corpus)
 
-    pos_counts, tag_counts = analyze_pos_and_tag(processed_corpus)
+    pos_counts, tag_counts = analyze_pos_and_tag(corpus)
 
     visualize_counts(pos_counts, "Częstość występowania części mowy", "Części mowy")
     visualize_counts(tag_counts, "Częstość występowania tagów", "Tagi")
