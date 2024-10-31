@@ -25,7 +25,7 @@ def process_corpus_with_spacy(corpus):
     for title, text in corpus:
         doc = nlp(text)
         tokens_info = [
-            (token.text, token.lemma_, token.pos_, token.morph)
+            (token.text, token.lemma_, token.pos_, token.tag_)
             for token in doc
             if token.is_alpha and not token.is_stop
         ]
@@ -33,18 +33,18 @@ def process_corpus_with_spacy(corpus):
     return processed_corpus
 
 
-def analyze_pos_and_morph(processed_corpus):
+def analyze_pos_and_tag(processed_corpus):
     pos_counts = {}
-    morph_counts = {}
+    tag_counts = {}
 
     for title, tokens_info in processed_corpus:
         pos_freq = Counter([token[2] for token in tokens_info])
-        morph_freq = Counter([str(token[3]) for token in tokens_info])
+        tag_freq = Counter([token[3] for token in tokens_info])
 
         pos_counts[title] = dict(pos_freq)
-        morph_counts[title] = dict(morph_freq)
+        tag_counts[title] = dict(tag_freq)
 
-    return pos_counts, morph_counts
+    return pos_counts, tag_counts
 
 
 def noun_counts_by_lemma(processed_corpus):
@@ -117,10 +117,10 @@ if __name__ == "__main__":
 
     processed_corpus = process_corpus_with_spacy(corpus)
 
-    pos_counts, morph_counts = analyze_pos_and_morph(processed_corpus)
+    pos_counts, tag_counts = analyze_pos_and_tag(processed_corpus)
 
     visualize_counts(pos_counts, "Częstość występowania części mowy", "Części mowy")
-    visualize_counts(morph_counts, "Częstość występowania klas morfologicznych", "Klasy morfologiczne")
+    visualize_counts(tag_counts, "Częstość występowania tagów", "Tagi")
 
     noun_counts = noun_counts_by_lemma(processed_corpus)
     for book_title, counts in noun_counts.items():

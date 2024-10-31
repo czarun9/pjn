@@ -54,7 +54,7 @@ Wyniki analizy redukcji wymiarowości TF-IDF do dwóch wymiarów za pomocą PCA:
 | **W Pustyni i w Puszczy**   | 0.7117  | 0.4171  |
 
 
-![Wykres przedstawiający redukcję wymiarowości](resources/plots/tf-idf-reduced-matrix-plot.png)
+![Wykres przedstawiający redukcję wymiarowości](../resources/plots/tf-idf-reduced-matrix-plot.png)
 
 
 ## Wnioski

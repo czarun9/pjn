@@ -19,7 +19,7 @@ def load_stopwords(filepath):
     return set(stopwords)
 
 
-stopwords_file_path = os.path.join('resources', 'polish.stopwords.txt')
+stopwords_file_path = os.path.join('../resources', 'polish.stopwords.txt')
 stopwords = load_stopwords(stopwords_file_path)
 
 
@@ -113,7 +113,7 @@ def plot_2d_scatter(matrix_2d, labels=None):
     plt.show()
 
 
-folder_path = 'resources/books'
+folder_path = '../resources/books'
 document_labels = [
     "Mała syrenka",
     "Calineczka",
